@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,8 @@ const PostCard = ({ post }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
 
   const { user } = useAuth();
   const { toast } = useToast();
@@ -148,14 +151,34 @@ const PostCard = ({ post }: PostCardProps) => {
         </div>
 
         {/* Image */}
-        <div className="aspect-square bg-secondary">
-          <img
-            src={post.image_url}
-            alt={post.caption || 'Post image'}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
+        <Dialog open={imageOpen} onOpenChange={(open) => { setImageOpen(open); if (!open) setZoomed(false); }}>
+          <DialogTrigger asChild>
+            <div className="aspect-square bg-secondary cursor-zoom-in" onClick={() => setImageOpen(true)}>
+              <img
+                src={post.image_url}
+                alt={post.caption || 'Post image'}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl p-0 bg-transparent shadow-none flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center">
+              <img
+                src={post.image_url}
+                alt={post.caption || 'Post image'}
+                className={cn(
+                  "max-h-[80vh] max-w-full object-contain transition-transform duration-200",
+                  zoomed ? "scale-150 cursor-zoom-out" : "cursor-zoom-in"
+                )}
+                style={{ userSelect: 'none' }}
+                draggable={false}
+                onClick={() => setZoomed(z => !z)}
+                title={zoomed ? 'Click to zoom out' : 'Click to zoom in'}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Actions */}
         <div className="p-4">
